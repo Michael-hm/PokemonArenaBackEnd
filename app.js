@@ -13,6 +13,7 @@ const io = socketIo(server, {
 });
 const rooms = {};
 const roomsPokemons = {};
+const attackLoader = {};
 
 io.on('connection', (socket) => {
   console.log('New client connected');
@@ -22,7 +23,6 @@ io.on('connection', (socket) => {
     if (!rooms[room]) {
       rooms[room] = [];
     } 
-    console.log(rooms)
     if (rooms[room].length < 2) {
       rooms[room].push(socket.id);
       socket.join(room);
@@ -35,15 +35,14 @@ io.on('connection', (socket) => {
   });
   
   socket.on('attack', (data) => {
-    const { room, attack } = data;
-    io.to(room).emit('attack', attack);
+    const { room, attack, player } = data;
+    io.to(rooms[room]).emit('reciveAttack', {player, attack});
   });
 
   socket.on('loadPokemon', (data) => {
     const { room, pokemons } = data;
     roomsPokemons[room] = pokemons;
     socket.emit('loadPokemon', { success: true, message: 'Data loaded' })
-    console.log(roomsPokemons)
   });
 
   socket.on('disconnect', () => {
